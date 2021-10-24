@@ -1,7 +1,7 @@
 from __future__ import annotations  # python 3.10
 import yaml
 import os
-from redpanda.entitytemplate import EntityTemplate
+from redpanda.template.entitytemplate import EntityTemplate
 
 
 class EntityTemplateRegistry():
