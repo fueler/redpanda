@@ -7,6 +7,7 @@ setup(name='redpanda',
       author_email='wayne.moorefield@gmail.com',
       packages=['redpanda',
                 'redpanda.ecs',
+                'redpanda.ecs.systems',
                 'redpanda.parser',
                 'redpanda.template',
       ]
