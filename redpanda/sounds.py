@@ -1,5 +1,9 @@
 
 import pygame
+import redpanda.logging
+
+
+logger = redpanda.logging.get_logger('sounds')
 
 
 class SoundData:
@@ -9,7 +13,7 @@ class SoundData:
         try:
             self._sound = pygame.mixer.Sound(self._filename)
         except FileNotFoundError as e:
-            print(f'Sound filename not found: {self._filename}')
+            logger.error(f'Sound filename not found: {self._filename}')
             raise
 
     @property

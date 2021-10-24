@@ -9,23 +9,25 @@ from pygame.surface import Surface
 import pytmx
 import pyscroll
 import pprint
-
+import redpanda.logging
 
 _atexit_fns = []
+
+logger = redpanda.logging.get_logger('ecs')
 
 
 def register_atexit(atexit_fn) -> None:
     """Register a function to be called at the end of
     the ECS game or when an exception is thrown"""
-    print(f'Registering atexit {atexit_fn.__name__} function')
+    logger.info(f'Registering atexit {atexit_fn.__name__} function')
     _atexit_fns.insert(0, atexit_fn)
 
 
 def _run_atexit() -> None:
     """Iterates through all the atexit functions"""
-    print('Iterating atexit functions')
+    logger.info('Iterating atexit functions')
     for fn in _atexit_fns:
-        print(f'Calling {fn.__name__}')
+        logger.info(f'Calling {fn.__name__}')
         fn()
 
 
@@ -34,7 +36,7 @@ def start_game(game_fn) -> None:
         game_fn()
         _run_atexit()
     except:
-        print('ERROR!! Exception thrown')
+        logger.critical('ERROR!! Exception thrown')
         _run_atexit()
         raise
 
@@ -381,7 +383,7 @@ class World():
             self._areas[area_name].enter()
             self._current_area = area_name
         else:
-            print(f'Invalid area: {area_name}, valid ones {self._areas.keys()}')
+            logger.error(f'Invalid area: {area_name}, valid ones {self._areas.keys()}')
 
     @property
     def current_area(self) -> Area:
@@ -654,7 +656,7 @@ class App():
         self._schedule.initialize_and_run(self._world, self._resources)
 
     def initialize(self) -> None:
-        print('Initialize Application')
+        logger.info('Initialize Application')
         self._startup_schedule.initialize_and_run(self._world, self._resources)
 
     def run(self) -> None:

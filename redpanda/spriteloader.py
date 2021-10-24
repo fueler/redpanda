@@ -3,6 +3,10 @@ from typing import List, Optional
 from redpanda.sprite import Sprite, SpriteAnimation, SpriteAnimationSet
 from redpanda.spritesheet import SpriteSheetAnimation, SpriteSheetAnimationSet, SpriteSheetMetaData
 import pygame
+import redpanda.logging
+
+
+logger = redpanda.logging.get_logger('sprite.loader')
 
 
 class SimpleSpriteSheetConverter():
@@ -12,7 +16,7 @@ class SimpleSpriteSheetConverter():
             self._sheet = pygame.image.load(filename).convert_alpha()
         except pygame.error as message:
             # TODO do better error handling
-            print('Unable to load spritesheet image: {}'.format(filename))
+            logger.error('Unable to load spritesheet image: {}'.format(filename))
             raise SystemExit from message
 
         self._width = width

@@ -2,6 +2,10 @@ from __future__ import annotations  # python 3.10
 import yaml
 import os
 from redpanda.template.entitytemplate import EntityTemplate
+import redpanda.logging
+
+
+logger = redpanda.logging.get_logger('registry.EntityTemplate')
 
 
 class EntityTemplateRegistry():
@@ -64,7 +68,7 @@ class EntityTemplateRegistryParser():
                         template = EntityTemplateParser().parse(name, yaml_npc_data).template()
                         self._registry.add_template(template.name, template)
         except yaml.YAMLError:
-            print('Unable to load npc templates')
+            logger.error('Unable to load npc templates')
             raise
         return self
 

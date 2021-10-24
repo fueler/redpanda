@@ -6,7 +6,9 @@ import os
 from redpanda.spritesheet import SpriteSheetMetaData, SpriteSheetParser
 from redpanda.sounds import SoundData
 from typing import Union
-import pprint
+import redpanda.logging
+
+logger = redpanda.logging.get_logger('registry.Asset')
 
 class AssetRegistry():
     def __init__(self) -> None:
@@ -71,21 +73,21 @@ class AssetRegistryParser():  # TODO Move this
                 if data.get('type') != 'asset-list':
                     raise ValueError(f'{data.get("type")} is not of type resource')
                 if 'sprites' in data:
-                    print('Assets: Parsing Sprites')
+                    logger.info('Assets: Parsing Sprites')
                     for name, yaml_filename in data['sprites'].items():
                         meta = SpriteSheetParser().parse(os.path.join(self._yaml_dir, 'sprites'), yaml_filename).meta()  # TODO fix this
                         self._registry.add_spritesheet(meta.name, meta)
                 if 'sounds' in data:
-                    print('Assets: Parsing Sounds')
+                    logger.info('Assets: Parsing Sounds')
                     for name, sound_filename in data['sounds'].items():
                         self._registry.add_sound(name, os.path.join(self._yaml_dir, 'sounds', sound_filename))  # TODO fix this
                 if 'world' in data:
-                    print('Assets: Parsing World')
+                    logger.info('Assets: Parsing World')
                     world_filename = data['world']
                     world = WorldTemplateParser(self._yaml_dir).parse(world_filename).build()
                     self._registry.add_world(world)
         except yaml.YAMLError:
-            print('Unable to load assets metadata')
+            logger.error('Unable to load assets metadata')
             raise
         return self
 

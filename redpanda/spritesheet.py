@@ -5,6 +5,11 @@ import yaml
 import os
 from typing import List, Dict, Optional
 from redpanda.ecs.types import Direction
+import redpanda.logging
+
+
+logger = redpanda.logging.get_logger('sprite.spritesheet')
+
 
 
 # TODO list
@@ -78,7 +83,6 @@ class SpriteSheetAnimationSet():
         self._direction: List[SpriteSheetAnimation] = [SpriteSheetAnimation() for i in range(0, len(Direction))]
 
     def __str__(self) -> str:
-        #print(f'DEBUG: {" ".join([str(direction) for direction in self._direction])}')
         return f'{self._name}: {" ".join([str(direction) for direction in self._direction])}'
 
     @property
@@ -234,9 +238,10 @@ class SpriteSheetParser():
                         self._meta.add_animation_set(name, animation_set)
                 else:
                     # TODO find better exception
+                    logger.error('Unknown sprite type')
                     raise Exception('Unknown sprite type')
         except yaml.YAMLError:
-            print('Unable to load spritesheet metadata')
+            logger.error('Unable to load spritesheet metadata')
             raise
         #print(self._meta)
         return self

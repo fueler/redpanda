@@ -3,6 +3,10 @@ import os
 import yaml
 from redpanda.template.worldtemplate import WorldTemplate
 from redpanda.parser.areaparser import AreaTemplateParser
+import redpanda.logging
+
+
+logger = redpanda.logging.get_logger('parser.WorldTemplate')
 
 
 class WorldTemplateParser():
@@ -22,7 +26,7 @@ class WorldTemplateParser():
                         template = AreaTemplateParser().parse(name, yaml_area_data).template()
                         self._template.add_area(template.name, template)
         except yaml.YAMLError:
-            print('Unable to load world template')
+            logger.error('Unable to load world template')
             raise
 
         return self

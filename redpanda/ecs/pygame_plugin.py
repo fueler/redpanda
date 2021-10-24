@@ -12,7 +12,9 @@ from redpanda.ecs.types import Controller
 from pygame_gui import UIManager
 from redpanda import util
 from redpanda.timerregistery import TimerRegistry
+import redpanda.logging
 
+logger = redpanda.logging.get_logger('pygame_plugin')
 
 class ResourceTypes:
     SYS_QUIT = 'sys.quit'
@@ -64,7 +66,7 @@ class PygamePlugin(Plugin):
                 resources[ResourceTypes.SYS_TIMERS] = TimerRegistry()
 
                 def pygame_atexit():
-                    print('Quiting pygame')
+                    logger.info('Quiting pygame')
                     pygame.quit()
 
                 register_atexit(pygame_atexit)
@@ -92,7 +94,7 @@ class PygamePlugin(Plugin):
                     util.set_window_caption('YaRPG')  # TODO get from config
                     surface = util.set_window_size(self._width, self._height)
                     resources[ResourceTypes.RENDERER_SURFACE] = surface
-                    print(self.name(), f'- window created {self._width}x{self._height}')
+                    logger.info(self.name(), f'- window created {self._width}x{self._height}')
 
 
         class PygameRendererFlip(System):
