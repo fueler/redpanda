@@ -5,6 +5,10 @@ setup(name='redpanda',
       description='Red Panda Game Framework',
       author='Wayne Moorefield',
       author_email='wayne.moorefield@gmail.com',
-      packages=['redpanda']
+      packages=['redpanda',
+                'redpanda.ecs',
+                'redpanda.parser',
+                'redpanda.template',
+      ]
 )
 
