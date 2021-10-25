@@ -10,7 +10,6 @@ from redpanda.ecs.core import ECS
 from redpanda.ecs.core import register_atexit
 from redpanda.ecs.types import Controller
 from pygame_gui import UIManager
-from redpanda import util
 from redpanda.timerregistery import TimerRegistry
 import redpanda.logging
 
@@ -23,6 +22,7 @@ class ResourceTypes:
     SYS_RESOLUTION = 'sys.resolution'
     SYS_KEYS_PRESSED = 'sys.keys_pressed'
     GAME_DIRECTORIES = 'sys.directories'
+    GAME_TITLE = 'game.title'
     GAME_TIME_ELAPSED = 'game.time_elapsed'
     GAME_BACKGROUND_MUSIC = 'game.music.background'
     GAME_CAMERA_TRACKING_ENTITY = 'game.camera.tracking_entity'
@@ -40,6 +40,7 @@ class PygamePlugin(Plugin):
                 super().__init__('Config')
 
             def initialize(self, world: World, resources: Resources) -> None:
+                resources[ResourceTypes.GAME_TITLE] = ''
                 # TODO This needs to come from config
                 resources[ResourceTypes.SYS_RESOLUTION] = dict({'width': 640,
                                                                 'height': 480})
@@ -77,25 +78,33 @@ class PygamePlugin(Plugin):
                 super().__init__('PygameRendererSetup')
                 self._width: int = 0
                 self._height: int = 0
-                self._changed = False
+                self._resolution_changed: bool = False
+                self._title: str = ''
+                self._title_changed: bool = False
 
             def update(self, world: World, resources: Resources) -> None:
                 width = resources[ResourceTypes.SYS_RESOLUTION]['width']
                 height = resources[ResourceTypes.SYS_RESOLUTION]['height']
 
                 if self._width != width or self._height != height:
-                    self._changed = True
+                    self._resolution_changed = True
                     self._width = width
                     self._height = height
 
+                if self._title != resources[ResourceTypes.GAME_TITLE]:
+                    self._title = resources[ResourceTypes.GAME_TITLE]
+                    self._title_changed = True
+
             def run_once(self, world: World, resources: Resources) -> None:
-                if self._changed:
-                    self._changed = False
-                    util.set_window_caption('YaRPG')  # TODO get from config
-                    surface = util.set_window_size(self._width, self._height)
+                if self._resolution_changed:
+                    self._resolution_changed = False
+                    surface = pygame.display.set_mode((self._width, self._height))
                     resources[ResourceTypes.RENDERER_SURFACE] = surface
                     logger.info(self.name(), f'- window created {self._width}x{self._height}')
 
+                if self._title_changed:
+                    self._title_changed = False
+                    pygame.display.set_caption(set._title)
 
         class PygameRendererFlip(System):
             def __init__(self) -> None:
