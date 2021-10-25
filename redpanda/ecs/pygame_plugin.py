@@ -100,7 +100,7 @@ class PygamePlugin(Plugin):
                     self._resolution_changed = False
                     surface = pygame.display.set_mode((self._width, self._height))
                     resources[ResourceTypes.RENDERER_SURFACE] = surface
-                    logger.info(self.name(), f'- window created {self._width}x{self._height}')
+                    logger.info(f'{self.name()} - window created {self._width}x{self._height}')
 
                 if self._title_changed:
                     self._title_changed = False
