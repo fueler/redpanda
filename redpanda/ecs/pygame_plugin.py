@@ -79,10 +79,9 @@ class PygamePlugin(Plugin):
                 self._width: int = 0
                 self._height: int = 0
                 self._resolution_changed: bool = False
-                self._title: str = ''
-                self._title_changed: bool = False
 
             def update(self, world: World, resources: Resources) -> None:
+                # TODO Fix this because this is only ran once
                 width = resources[ResourceTypes.SYS_RESOLUTION]['width']
                 height = resources[ResourceTypes.SYS_RESOLUTION]['height']
 
@@ -91,10 +90,6 @@ class PygamePlugin(Plugin):
                     self._width = width
                     self._height = height
 
-                if self._title != resources[ResourceTypes.GAME_TITLE]:
-                    self._title = resources[ResourceTypes.GAME_TITLE]
-                    self._title_changed = True
-
             def run_once(self, world: World, resources: Resources) -> None:
                 if self._resolution_changed:
                     self._resolution_changed = False
@@ -102,9 +97,23 @@ class PygamePlugin(Plugin):
                     resources[ResourceTypes.RENDERER_SURFACE] = surface
                     logger.info(f'{self.name()} - window created {self._width}x{self._height}')
 
-                if self._title_changed:
-                    self._title_changed = False
-                    pygame.display.set_caption(set._title)
+
+        class PygameWindowCaption(System):
+            def __init__(self) -> None:
+                super().__init__('PygameWindowCaption')
+                self._caption: str = ''
+                self._caption_changed: bool = False
+
+            def update(self, world: World, resources: Resources) -> None:
+                if self._caption != resources[ResourceTypes.GAME_TITLE]:
+                    self._caption_changed = True
+                    self._caption = resources[ResourceTypes.GAME_TITLE]
+
+            def run_once(self, world: World, resources: Resources) -> None:
+                if self._caption_changed:
+                    self._caption_changed = False
+                    pygame.display.set_caption(self._caption)
+
 
         class PygameRendererFlip(System):
             def __init__(self) -> None:
@@ -242,6 +251,7 @@ class PygamePlugin(Plugin):
             .add_system_to_stage(ECS.STAGE_PRE_EVENT, PygameController())
             .add_system_to_stage(ECS.STAGE_UPDATE, PygameBackgroundMusic())
             .add_system_to_stage(ECS.STAGE_POST_UPDATE, PygameRenderer())
+            .add_system_to_stage(ECS.STAGE_LAST, PygameWindowCaption())
             .add_system_to_stage(ECS.STAGE_LAST, PygameRendererFlip())
             .add_system_to_stage(ECS.STAGE_LAST, PygameSleepToNextFrame())
         )
