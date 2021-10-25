@@ -2,7 +2,7 @@ import logging
 import sys
 
 
-FORMATTER = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
+FORMATTER = logging.Formatter('%(asctime)s - %(levelname)s: %(name)s - %(message)s')
 
 def console_handler():
     console_handler = logging.StreamHandler(sys.stdout)
