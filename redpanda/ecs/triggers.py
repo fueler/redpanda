@@ -23,7 +23,7 @@ def timer_trigger(entity: Entity, timer: Timer) -> bool:
     return False
 
 
-triggers: Dict[str, Callable[[Entity, Timer],bool]] = {
+triggers: Dict[str, Callable[[Entity, Timer], bool]] = {
     'movement': movement_trigger,
     'timer': timer_trigger,
 }

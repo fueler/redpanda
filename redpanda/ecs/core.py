@@ -111,6 +111,7 @@ class Entity(pygame.sprite.Sprite):
         return f'{self._id}: {" ".join(str(c) for c in self._components)}'
 
     def __repr__(self) -> str:
+        # TODO make this easier to print and commonize with __str__
         # return super().__repr__()
         return f'{self._id}: {" ".join(str(c) for c in self._components)}'
 
@@ -141,10 +142,6 @@ class Entity(pygame.sprite.Sprite):
         for component in component_list:
             self._components[component.name] = component
         return self
-
-    @property
-    def components(self) -> List[Component]:
-        return self._components
 
     def remove(self, component: Component) -> Entity:
         """Remove component from entity"""
@@ -307,6 +304,7 @@ class Area():
 
         self._walls = list()
         self._doors = list()
+        self._stationary_objects = list()
         for object in self._tmx_data.objects:
             if object.type == 'SolidCollision':
                 self._walls.append(pygame.Rect(
@@ -318,6 +316,9 @@ class Area():
                     object.x, object.y,
                     object.width, object.height
                 ))
+
+        self._stationary_objects.extend(self._walls)
+        self._stationary_objects.extend(self._doors)
 
     def leave(self) -> None:
         """Leave an area"""
@@ -336,7 +337,8 @@ class Area():
         self._main_group.draw(surface)
 
     def collide_check(self, entity_rect: Rect) -> bool:
-        return entity_rect.collidelist(self._walls + self._doors) > -1
+        #return entity_rect.collidelist(self._walls + self._doors) > -1
+        return entity_rect.collidelist(self._stationary_objects) > -1
 
 
 class World():

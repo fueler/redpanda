@@ -26,5 +26,6 @@ class EntityMovement(System):
 
             delta = movement.value * (velocity.value * Vector3(time_elapsed_seconds))
             location.position += delta
+            # TODO handle wall sliding
             if world.collide_check(entity.feet):
                 location.position -= delta
