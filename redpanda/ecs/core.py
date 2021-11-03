@@ -312,6 +312,7 @@ class Area():
                     object.width, object.height
                 ))
             elif object.type == 'Door':
+                logger.info(f'door: {str(object)}')
                 self._doors.append(pygame.Rect(
                     object.x, object.y,
                     object.width, object.height
@@ -337,7 +338,6 @@ class Area():
         self._main_group.draw(surface)
 
     def collide_check(self, entity_rect: Rect) -> bool:
-        #return entity_rect.collidelist(self._walls + self._doors) > -1
         return entity_rect.collidelist(self._stationary_objects) > -1
 
 
