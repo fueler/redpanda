@@ -45,3 +45,44 @@ class SoundEffect():
     volume: float = 0
     enabled: bool = False
     triggered: bool = False
+
+
+class PyScrollMap():
+    # TODO add slots
+
+    def __init__(self,
+                 tmx_data,
+                 map_data,
+                 map_layer,
+                 main_group,
+                 stationary_collision_list) -> None:
+        self._tmx_data = tmx_data
+        self._map_data = map_data
+        self._map_layer = map_layer
+        self._stationary_collision_list = stationary_collision_list
+        self._main_group = main_group  # TODO should this be here or in the area?
+
+    @property
+    def tmx_data(self):
+        return self._tmx_data
+
+    @property
+    def map_data(self):
+        return self._map_data
+
+    @property
+    def map_layer(self):
+        return self._map_layer
+
+    @property
+    def stationary_collision_list(self):
+        return self._stationary_collision_list
+
+    @property
+    def main_group(self):
+        return self._main_group
+
+
+@dataclass
+class WorldMovementEvent():
+    area: str

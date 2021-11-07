@@ -95,7 +95,7 @@ class PygamePlugin(Plugin):
                     self._resolution_changed = False
                     surface = pygame.display.set_mode((self._width, self._height))
                     resources[ResourceTypes.RENDERER_SURFACE] = surface
-                    logger.info(f'{self.name()} - window created {self._width}x{self._height}')
+                    logger.info(f'{self.name} - window created {self._width}x{self._height}')
 
 
         class PygameWindowCaption(System):

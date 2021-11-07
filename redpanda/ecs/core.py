@@ -2,13 +2,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import uuid
 from collections import UserDict
-from typing import List, Dict, Tuple
+from typing import List, Dict, Optional, Tuple
 import pygame
 from pygame.rect import Rect
 from pygame.surface import Surface
 import pytmx
 import pyscroll
 import pprint
+from redpanda.ecs.types import PyScrollMap
 import redpanda.logging
 
 _atexit_fns = []
@@ -62,6 +63,7 @@ class System(ABC):
     def __str__(self) -> str:
         return f'{self._name}'
 
+    @property
     def name(self) -> str:
         """Returns name of system"""
         return self._name
@@ -283,43 +285,31 @@ class Area():
     def __init__(self, name: str, map_filename: str) -> None:
         self._name = name
         self._map_file = map_filename
+        self._map: Optional[PyScrollMap] = None
+        self._entities: list[Entity] = list()
 
+    @property
     def name(self) -> str:
         return self._name
 
+    @property
+    def map_filename(self) -> str:
+        return self._map_file
+
+    @property
+    def map(self) -> Optional[PyScrollMap]:
+        return self._map
+
+    @map.setter
+    def map(self, map: PyScrollMap) -> None:
+        self._map = map
+        for entity in self._entities:
+            self._map.main_group.add(entity)
+
     def enter(self) -> None:
         """Enter an area"""
-        # TODO Move this to a system so that it can access resources
-        # viewport = (resources[ResourceTypes.SYS_RESOLUTION]['width'],
-        #             resources[ResourceTypes.SYS_RESOLUTION]['height'])
-        viewport = (640, 480)  # TODO read from resources
-
-        self._tmx_data = pytmx.util_pygame.load_pygame(self._map_file)
-        self._map_data = pyscroll.data.TiledMapData(self._tmx_data)
-        self._map_layer = pyscroll.BufferedRenderer(self._map_data,
-                                                    viewport,
-                                                    clamp_camera=True)
-        self._map_layer.zoom = 3  # TODO read from config
-        self._main_group = pyscroll.PyscrollGroup(map_layer=self._map_layer, default_layer=4)
-
-        self._walls = list()
-        self._doors = list()
-        self._stationary_objects = list()
-        for object in self._tmx_data.objects:
-            if object.type == 'SolidCollision':
-                self._walls.append(pygame.Rect(
-                    object.x, object.y,
-                    object.width, object.height
-                ))
-            elif object.type == 'Door':
-                logger.info(f'door: {str(object)}')
-                self._doors.append(pygame.Rect(
-                    object.x, object.y,
-                    object.width, object.height
-                ))
-
-        self._stationary_objects.extend(self._walls)
-        self._stationary_objects.extend(self._doors)
+        # TODO manage loading vs loaded
+        pass
 
     def leave(self) -> None:
         """Leave an area"""
@@ -327,18 +317,25 @@ class Area():
 
     def add(self, entity: Entity) -> None:
         """Add an entity to area"""
-        self._main_group.add(entity)
+        self._entities.append(entity)
+        if self._map:
+            self._map.main_group.add(entity)
 
     def remove(self, entity: Entity) -> None:
         """Remove an entity from area"""
-        self._main_group.add(entity)
+        # TODO remove from entities
+        if self._map:
+            self._map.main_group.add(entity)  # TODO fix this
 
     def render(self, surface: Surface, camera_center: Tuple[int, int]) -> None:
-        self._main_group.center(camera_center)
-        self._main_group.draw(surface)
+        if self._map:
+            self._map.main_group.center(camera_center)
+            self._map.main_group.draw(surface)
 
     def collide_check(self, entity_rect: Rect) -> bool:
-        return entity_rect.collidelist(self._stationary_objects) > -1
+        if self._map:
+            return entity_rect.collidelist(self._map.stationary_collision_list) > -1
+        return False
 
 
 class World():
@@ -370,7 +367,14 @@ class World():
 
     def add_area(self, area: Area) -> None:
         """Add Area to world"""
-        self._areas[area.name()] = area
+        self._areas[area.name] = area
+
+    def find_area(self, name: str) -> Optional[Area]:
+        """Return an area if found"""
+        if name in self._areas:
+            return self._areas[name]
+        else:
+            return None
 
     def enter_area(self, area_name: str) -> None:
         """Enter an area, setting it the focus
@@ -465,6 +469,7 @@ class Stage():
             value += '\n'
         return value
 
+    @property
     def name(self) -> str:
         return self._name
 
@@ -478,6 +483,7 @@ class Stage():
 
     def initialize(self, world: World, resources: Resources) -> None:
         for system in self._systems:
+            logger.info(f'Initializing {self._name}:{system.name}')
             system.initialize(world, resources)
 
     def run(self, world: World, resources: Resources) -> None:
@@ -562,6 +568,7 @@ class Schedule():
     def initialize(self, world: World, resources: Resources) -> Schedule:
         """Initialize all systems in stage order, called once per update"""
         for stage_name in self._stage_order:
+            logger.info(f'Initializing {stage_name}')
             self._stages[stage_name].initialize(world, resources)
         return self
 
@@ -571,6 +578,7 @@ class Schedule():
             self._stages[stage_name].run(world, resources)
 
     def initialize_and_run(self, world: World, resources: Resources) -> None:
+        logger.info(f'Initializing - {" ".join(self._stage_order)}')
         self.initialize(world, resources)
         self.run_once(world, resources)
 
@@ -655,11 +663,13 @@ class App():
         return self._resources
 
     def update(self) -> None:
-        self._schedule.initialize_and_run(self._world, self._resources)
+        self._schedule.run_once(self._world, self._resources)
 
     def initialize(self) -> None:
         logger.info('Initialize Application')
-        self._startup_schedule.initialize_and_run(self._world, self._resources)
+        self._startup_schedule.initialize(self._world, self._resources)
+        self._schedule.initialize(self._world, self._resources)
+        self._startup_schedule.run_once(self._world, self._resources)  # TODO should we do this here?
 
     def run(self) -> None:
         self._runner(self)
