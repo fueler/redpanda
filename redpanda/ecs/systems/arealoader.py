@@ -55,6 +55,8 @@ class AreaLoader(System):
                             object.width, object.height
                         )
                     )
+                elif object.type == 'Entity':
+                    logger.info(f'entity: {str(object)}')
                 elif object.type == 'Door':
                     logger.info(f'door: {str(object)}')
                     doors.append(
