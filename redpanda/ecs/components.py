@@ -169,3 +169,17 @@ class SoundEffectsComponent(Component):
 
     def add(self, name: str, effect: SoundEffect) -> None:
         self._sound_effects[name] = effect
+
+
+class VisibleComponent(Component):
+    def __init__(self) -> None:
+        super().__init__('visible')
+        self._value: bool = True
+
+    @property
+    def value(self) -> bool:
+        return self._value
+
+    @value.setter
+    def visible(self, value: bool) -> None:
+        self._value = value
